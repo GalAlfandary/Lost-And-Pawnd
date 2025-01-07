@@ -1,22 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import colors from "../constants/colors"; // Adjust the path to your colors file
+import { ScrollView } from "react-native-gesture-handler";
 
 const PawndCard = ({ petName, imageUrl, lostDate, onPress }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      {/* Image Section */}
-      <Image source={require('../assets/images/pawndChip.png')} style={styles.chip} />
-      <Image source={{ uri: imageUrl }} style={styles.image} />
-      
-      
-
-      {/* Content Section */}
-      <View style={styles.content}>
-        <Text style={styles.petName}>{petName}</Text>
-        <Text style={styles.date}>Pawnd in: {lostDate}</Text>
-      </View>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.card} onPress={onPress}>
+        {/* Image Section */}
+        <Image source={require('../assets/images/pawndChip.png')} style={styles.chip} />
+        <Image source={{ uri: imageUrl }} style={styles.image} />
+        
+        {/* Content Section */}
+        <View style={styles.content}>
+          <Text style={styles.petName}>{petName}</Text>
+          <Text style={styles.date}>Pawnd in: {lostDate}</Text>
+        </View>
+      </TouchableOpacity>
   );
 };
 
@@ -37,12 +36,14 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
   },
   chip: {
+    height: 32,
+    width: 83,
     zIndex: 1,
     top: 17,
     left: 5,
   },
   content: {
-    padding: 16,
+    paddingTop: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",

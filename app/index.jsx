@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingBottom: 30, // Adds spacing at the bottom
     alignItems: 'center', // Centers buttons horizontally
-    justifyContent: 'space-between', // Distributes buttons vertically
   },
   primaryButton: {
     marginBottom: 5,
@@ -127,12 +126,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: 100,
     width: '100%',
-    
+    alignItems: 'center',
   },
   google: {
     width: 20,
     height: 20,
-    marginRight: 200,
+    marginRight: 20,
     marginTop: 5,
   },
   ghostButton: {
