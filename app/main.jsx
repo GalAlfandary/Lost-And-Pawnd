@@ -30,9 +30,10 @@ const MainPage = () => {
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {
-      //Alert.alert("Error", "Could not fetch posts");
+      Alert.alert("Error", "Could not fetch posts");
     } else {
       setPosts(data);
+      console.log(data);
     }
     setLoading(false);
   };
@@ -40,6 +41,12 @@ const MainPage = () => {
   const handleCreatePost = () => {
     router.push("/create-post"); // Route to the create post screen
   };
+
+  const handleCardPress = (postId) => {
+    router.push('/post');
+  };
+  
+  
 
   if (isEnabled) { // Render PawndPage
     return (

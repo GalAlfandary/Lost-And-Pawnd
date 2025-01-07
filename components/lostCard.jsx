@@ -37,12 +37,14 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
   },
   chip: {
+    height: 32,
+    width: 65,
     zIndex: 1,
     top: 17,
     left: 5,
   },
   content: {
-    padding: 16,
+    paddingTop: 10,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
