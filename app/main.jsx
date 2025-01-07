@@ -37,6 +37,25 @@ const MainPage = () => {
     setLoading(false);
   };
 
+  const handleCardPress = (post) => {
+    router.push({
+      pathname: '/post',
+      params: {
+        id: post.id,
+        petName: post.petname,
+        imageUrl: post.imageurl,
+        lostDate: post.lostdate || "Unknown Date",
+        description: post.description || "No description provided.",
+        address: post.address || "No address provided.",
+        animalType: post.animalType || "Unknown",
+        breed: post.breed || "Unknown",
+        size: post.size || "Unknown",
+        lost: post.lost,
+      },
+    });
+  };
+  
+
   const handleCreatePost = () => {
     router.push("/create-post"); // Route to the create post screen
   };
@@ -98,18 +117,18 @@ const MainPage = () => {
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-      {posts.map((post) => 
-        !post.lost && (
-          <PawndCard
-            key={post.id}
-            petName={post.petname} // Map `petName` to `post.petname`
-            imageUrl={post.imageurl} // Map `imageUrl` to `post.imageurl`
-            lostDate={post.lostdate || "Unknown Date"} // Map `lostDate` or provide a fallback
-            onPress={() => handleCardPress(post.id)} // Handle press event
-          />
-        )
-      )}
-    </ScrollView>
+  {posts.map((post) =>
+    (isEnabled ? !post.lost : post.lost) && (
+      <PawndCard
+        key={post.id}
+        petName={post.petname}
+        imageUrl={post.imageurl}
+        lostDate={post.lostdate || "Unknown Date"}
+        onPress={() => handleCardPress(post)} // Pass the full post data
+      />
+    )
+  )}
+</ScrollView>
       </View>
     );
   }
@@ -170,16 +189,18 @@ const MainPage = () => {
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-      {posts.map((post) => post.lost &&(
-        <LostCard
-          key={post.id}
-          petName={post.petname} // Map `petName` to `post.petname`
-          imageUrl={post.imageurl} // Map `imageUrl` to `post.imageurl`
-          lostDate={post.lostdate || "Unknown Date"} // Map `lostDate` or provide a fallback
-          onPress={() => handleCardPress(post.id)} // Handle press event
-        />
-      ))}
-    </ScrollView>
+  {posts.map((post) =>
+    (isEnabled ? !post.lost : post.lost) && (
+      <LostCard
+        key={post.id}
+        petName={post.petname}
+        imageUrl={post.imageurl}
+        lostDate={post.lostdate || "Unknown Date"}
+        onPress={() => handleCardPress(post)} // Pass the full post data
+      />
+    )
+  )}
+</ScrollView>
     </View>
   );
 };

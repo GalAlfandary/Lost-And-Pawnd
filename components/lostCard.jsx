@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
   },
   chip: {
+    height: 32,
+    width: 65,
     zIndex: 1,
     top: 17,
     left: 5,
