@@ -13,6 +13,7 @@ const Signup2 = () => {
   const router = useRouter();
 
   const completeSignup = async () => {
+
     if (!email.trim() || !email.includes('@')) {
       Alert.alert('Validation Error', 'Please enter a valid email address.');
       return;
@@ -40,32 +41,30 @@ const Signup2 = () => {
         email,
         password,
       });
-  
+
       if (error) {
         Alert.alert('Signup Failed', error.message);
         return;
       }
-  
-      // Update the user's phone number
-      const { error: updateError } = await supabase.auth.updateUser({
-        phone: phoneNumber, // This will set the phone field in Supabase Auth
-      });
-  
-      if (updateError) {
-        Alert.alert('Error', 'Failed to update phone number. Please try again.');
-        return;
+
+      const userId = data?.user?.id || data?.session?.user?.id;
+      
+      if (!userId) {
+      Alert.alert('Error', 'Could not retrieve user ID.');
+      return;
       }
-  
-      // Save additional user details in the "profiles" table
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert([{ id: data.user.id, name, phoneNumber, email }]);
-  
-      if (insertError) {
-        Alert.alert('Error', 'Failed to save additional details. Please try again.');
-        return;
-      }
-  
+
+      await supabase
+  .from('users')
+  .insert([
+    {
+      userid: userId,
+      name: name,
+      phonenumber: phoneNumber,
+      email: email,
+    },
+  ]);
+      await AsyncStorage.removeItem('signupData'); // Clear the stored data
       Alert.alert('Signup Successful!', 'Your account has been created.');
       router.push('/main'); // Redirect to the main page
     } catch (error) {
