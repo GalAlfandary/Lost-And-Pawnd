@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, ScrollView,Share, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router"; // Import the correct hook
-import { supabase } from "/Users/galalfandary/Desktop/Lost&Pawnd/lost-and-pawnd/supabase.js";
+
+import { supabase } from "../supabase.js"; // Ensure you have this set up
 import colors from "../constants/colors";
 import { Button,IconButton } from "react-native-paper";
 import Characteristics from "../components/characteristics";
 import Petsize from "../components/petSize";
+
 import MapView, { Marker } from 'react-native-maps';
 import * as Linking from 'expo-linking'; // Make sure this is imported
 
@@ -73,12 +75,14 @@ const handleShare = async () => {
 
     if (result.action === Share.sharedAction) {
       console.log("Shared successfully");
+
     } else if (result.action === Share.dismissedAction) {
       console.log("Share dismissed");
     }
   } catch (error) {
     console.error("Error sharing:", error.message);
     Alert.alert("Error", "Unable to share the post at this time.");
+
   }
 };
 
@@ -145,6 +149,7 @@ const handleContact = async () => {
 };
 
 
+
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.topButtonsContainer}>
@@ -164,11 +169,14 @@ const handleContact = async () => {
         />
         </View>
         <View style={styles.imageContainer}>
+
   <Image source={{ uri: imageUrl }} style={styles.image} />
+
   <Image source={require('../assets/images/fade.png')} style={styles.fade} />
 </View>
 
       <View style={styles.container}>
+
 
         <View style={styles.nameAndGender}>
         
@@ -247,6 +255,7 @@ const handleContact = async () => {
   </MapView>
 </View>
         
+
         
 
       </View>
@@ -272,6 +281,7 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex",
     alignItems: "center",
+
   },
   imageContainer: {
     position: "relative", // Set position relative to stack child elements
@@ -305,6 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingVertical: 0,
   },
+
   pawndDate: {
     fontSize: 18,
     color: colors.primary,
@@ -321,6 +332,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontFamily: "JaldiBold",
     lineHeight: 25, 
+
   },
   CharacteristicsContainer: {
     flexDirection: "row",
@@ -330,6 +342,7 @@ const styles = StyleSheet.create({
   Characteristics: {
     fontSize: 18,
     color: colors.postSecondary,
+
     fontFamily: "JaldiRegular",
   },
   description: {
@@ -351,6 +364,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     zIndex: 20,
+
   },
   imageMap: {
     width: "100%",
@@ -376,6 +390,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+
 });
 
 

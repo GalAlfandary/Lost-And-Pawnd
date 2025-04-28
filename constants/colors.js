@@ -10,6 +10,7 @@ const colors = {
   onBoardingBackground: "#7AE5D0",
   lostChip: "#E2D17A",
   postSecondary:"#404955",
+
 };
 
 export default colors;

@@ -106,6 +106,12 @@ const MainPage = () => {
     router.push("/NewPet/PetStatusScreen"); // Route to the create post screen
   };
 
+  const handleCardPress = (postId) => {
+    router.push('/post');
+  };
+  
+  
+
   if (isEnabled) { // Render PawndPage
     return (
       <View style={styles.container}>
