@@ -9,7 +9,8 @@ const colors = {
   chipBackground: "#FFFFFF", 
   onBoardingBackground: "#7AE5D0",
   lostChip: "#E2D17A",
-  secondaryText:"#404955"
+  postSecondary:"#404955",
+
 };
 
 export default colors;

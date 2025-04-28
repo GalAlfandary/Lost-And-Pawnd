@@ -22,24 +22,88 @@ const MainPage = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+  
+  
+  // const fetchPosts = async () => {
+  //   try {
+  //     setLoading(true);
+  
+  //     const { data, error } = await supabase.rpc("get_posts_with_coordinates");
 
+  
+  //     if (error) {
+  //       console.error("Error fetching posts:", error.message);
+  //       Alert.alert("Error", "Could not fetch posts. Please try again.");
+  //       setPosts([]); // Clear posts on error (optional)
+  //     } else {
+  //       console.log("Fetched posts:", data);
+  //       setPosts(data || []); // Safely handle null response
+  //     }
+  //   } catch (err) {
+  //     console.error("Unexpected error fetching posts:", err);
+  //     Alert.alert("Unexpected Error", "Something went wrong.");
+  //     setPosts([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  
   const fetchPosts = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      Alert.alert("Error", "Could not fetch posts");
-    } else {
-      setPosts(data);
-      console.log(data);
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("Error fetching posts:", error.message);
+        Alert.alert("Error", "Could not fetch posts. Please try again.");
+        setPosts([]); // Clear posts on error (optional)
+      } else {
+        console.log("Fetched posts:", data);
+        setPosts(data || []); // Safely handle null response
+      }
+    } catch (err) {
+      console.error("Unexpected error fetching posts:", err);
+      Alert.alert("Unexpected Error", "Something went wrong.");
+      setPosts([]);   
     }
-    setLoading(false);
+    finally {
+      setLoading(false);
+    }
   };
+  
+  
+  
+
+  const handleCardPress = (post) => {
+    router.push({
+      pathname: '/post',
+      params: {
+        id: post.postid, 
+        petName: post.petname, 
+        imageUrl: post.imageurl, 
+        lostDate: post.lostdate || "Unknown Date", 
+        description: post.description || "No description provided.",
+        animalType: post.animaltype || "Unknown", 
+        breed: post.breed || "Unknown",
+        size: post.size || "Unknown",
+        lost: post.lost,
+        latitude: post.latitude,
+        longitude: post.longitude,
+        gender:post.gender || "Unknown",
+        userID: post.userid || "Unknown",
+      },
+    });
+  };
+  
+  
+  
+  
 
   const handleCreatePost = () => {
-    router.push("/create-post"); // Route to the create post screen
+    console.log("Create Post button pressed");
+    router.push("/NewPet/PetStatusScreen"); // Route to the create post screen
   };
 
   const handleCardPress = (postId) => {
@@ -54,7 +118,7 @@ const MainPage = () => {
         <View style={styles.titleContainer}>
           <IconButton
             icon="menu"
-            onPress={() => navigation.openDrawer()} 
+            //onPress={() => navigation.openDrawer()} 
             size={24}
             style={styles.menuButton}
             iconColor={colors.primary}
@@ -72,18 +136,32 @@ const MainPage = () => {
         <Button
           mode="contained"
           style={styles.primaryButton}
-          onPress={() => router.push("/lost-pets")}
+          onPress={() => handleCreatePost()}
           labelStyle={{
             fontFamily: 'JaldiBold',
-            fontSize: 18,
-                      
+            fontSize: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
           contentStyle={{
-            height: 45, // Set a fixed height
-            justifyContent: 'center', // Center content vertically
+            height: 50,
+            justifyContent: 'center',
           }}
         >
-          + New Post
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require('../assets/images/addPost.png')}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 8,
+                  resizeMode: 'contain',
+                }}
+              />
+              <Text style={{ fontFamily: 'JaldiBold', fontSize: 18, color: '#fff' }}>
+                New Post
+              </Text>
+            </View>
         </Button>
         <Button
           mode="contained"
@@ -91,32 +169,48 @@ const MainPage = () => {
           onPress={() => router.push("/lost-pets")}
           labelStyle={{
             fontFamily: 'JaldiBold',
-            fontSize: 18,       
+            fontSize: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
           contentStyle={{
-            height: 45, // Set a fixed height
-            justifyContent: 'center', // Center content vertically
+            height: 50,
+            justifyContent: 'center',
           }}
           textColor={colors.primary}
         >
-          🔍 Search
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require('../assets/images/search.png')}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 8,
+                  resizeMode: 'contain',
+                }}
+              />
+              <Text style={{ fontFamily: 'JaldiBold', fontSize: 18, color: colors.primary }}>
+                Search
+              </Text>
+            </View>
         </Button>
 
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-      {posts.map((post) => 
-        !post.lost && (
-          <PawndCard
-            key={post.id}
-            petName={post.petname} // Map `petName` to `post.petname`
-            imageUrl={post.imageurl} // Map `imageUrl` to `post.imageurl`
-            lostDate={post.lostdate || "Unknown Date"} // Map `lostDate` or provide a fallback
-            onPress={() => handleCardPress(post.id)} // Handle press event
-          />
-        )
-      )}
-    </ScrollView>
+  {posts.map((post) =>
+    (isEnabled ? !post.lost : post.lost) && (
+      <PawndCard
+  key={post.postid}
+  petName={post.petname}
+  imageUrl={post.imageurl}
+  lostDate={post.lostdate || "Unknown Date"}
+  onPress={() => handleCardPress(post)}
+/>
+
+    )
+  )}
+</ScrollView>
       </View>
     );
   }
@@ -126,7 +220,7 @@ const MainPage = () => {
       <View style={styles.titleContainer}>
       <IconButton
           icon="menu"
-          onPress={() => router.push('../')}
+          //onPress={() => router.push('../')}
           size={24}
           style={styles.menuButton}
           iconColor={colors.primary}
@@ -144,18 +238,33 @@ const MainPage = () => {
         <Button
           mode="contained"
           style={styles.primaryButton}
-          onPress={() => router.push("/lost-pets")}
-          labelStyle={{
+          //onPress={() => router.push("/PetStatusScreen")}
+           onPress={handleCreatePost}
+           labelStyle={{
             fontFamily: 'JaldiBold',
-            fontSize: 18,
-                      
+            fontSize: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
           contentStyle={{
-            height: 45, // Set a fixed height
-            justifyContent: 'center', // Center content vertically
+            height: 50,
+            justifyContent: 'center',
           }}
         >
-          + New Post
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require('../assets/images/addPost.png')}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 8,
+                  resizeMode: 'contain',
+                }}
+              />
+              <Text style={{ fontFamily: 'JaldiBold', fontSize: 18, color: '#fff' }}>
+                New Post
+              </Text>
+            </View>
         </Button>
         <Button
           mode="contained"
@@ -163,30 +272,48 @@ const MainPage = () => {
           onPress={() => router.push("/lost-pets")}
           labelStyle={{
             fontFamily: 'JaldiBold',
-            fontSize: 18,       
+            fontSize: 16,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
           contentStyle={{
-            height: 45, // Set a fixed height
-            justifyContent: 'center', // Center content vertically
+            height: 50,
+            justifyContent: 'center',
           }}
           textColor={colors.primary}
         >
-          🔍 Search
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={require('../assets/images/search.png')}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 8,
+                  resizeMode: 'contain',
+                }}
+              />
+              <Text style={{ fontFamily: 'JaldiBold', fontSize: 18, color: colors.primary }}>
+                Search
+              </Text>
+            </View>
         </Button>
 
       </View>
 
       <ScrollView style={styles.scrollContainer}>
-      {posts.map((post) => post.lost &&(
-        <LostCard
-          key={post.id}
-          petName={post.petname} // Map `petName` to `post.petname`
-          imageUrl={post.imageurl} // Map `imageUrl` to `post.imageurl`
-          lostDate={post.lostdate || "Unknown Date"} // Map `lostDate` or provide a fallback
-          onPress={() => handleCardPress(post.id)} // Handle press event
-        />
-      ))}
-    </ScrollView>
+  {posts.map((post) =>
+    (isEnabled ? !post.lost : post.lost) && (
+      <LostCard
+  key={post.postid}
+  petName={post.petname}
+  imageUrl={post.imageurl}
+  lostDate={post.lostdate || "Unknown Date"}
+  onPress={() => handleCardPress(post)}
+/>
+
+    )
+  )}
+</ScrollView>
     </View>
   );
 };
@@ -224,8 +351,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     marginRight: 5,
     alignItems: 'center',
-    
-  },
+    },
   searchButton: {
     paddingVertical: 2,
     backgroundColor: "#ffffff",

@@ -2,8 +2,20 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text,Image,TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+
 import colors from '../constants/colors';
 import { supabase } from '../supabase';
+import PetStatusScreen from './NewPet/PetStatusScreen';
+import PetInfoScreen from './NewPet/PetInfoScreen';
+import PetLocationScreen from './NewPet/PetLocationScreen';
+import PetCharacteristicsScreen from './NewPet/PetCharacteristicsScreen';
+import PetDescriptionScreen from './NewPet/PetDescriptionScreen';
+import SearchPetScreen from './Search/SearchPetScreen';
+
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import MainPage from './main';
 
 
 const Home = () => {
@@ -17,21 +29,43 @@ const Home = () => {
   const handleSignUp = () => {
     router.push('./auth/signup');
   };
+  WebBrowser.maybeCompleteAuthSession();
 
   const handleGoogle = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      });
-      setLoading(false);
-    
-      if (error) {
-        Alert.alert('Login Failed', error.message);
-      } else {
-        Alert.alert('Login Successful', 'You have logged in successfully.');
-        router.push('/main'); // Redirect to home after login
-      }
-    };
+    const redirectUri = AuthSession.makeRedirectUri({
+      useProxy: true,
+    });
+  
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUri,
+      },
+    });
+  
+    setLoading(false);
+  
+    if (error) {
+      Alert.alert('Login Failed', error.message);
+    } else {
+      // Wait for auth state change
+      // We handle redirect automatically in step 4
+    }
+  };
+
+useEffect(() => {
+  const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      console.log('✅ User logged in!', session.user);
+      router.push('/main'); // ✅ Redirect after login
+    }
+  });
+
+  return () => {
+    authListener.subscription.unsubscribe();
+  };
+}, []);
 
   return (
     <View style={styles.container}>
@@ -148,3 +182,7 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
+
+// export default function Home() {
+//   return <MainPage/>;
+// }
