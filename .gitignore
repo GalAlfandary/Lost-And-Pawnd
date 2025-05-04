@@ -42,3 +42,8 @@ app-example
 expo-env.d.ts
 
 constants/secrets.js
+
+
+# Python
+backend/venv
+backend/secrets2.json

@@ -1,0 +1,6 @@
+supabase==2.15.1
+requests==2.32.3
+Pillow==11.2.1
+torch==2.7.0
+torchvision==0.22.0
+Flask==3.1.0
