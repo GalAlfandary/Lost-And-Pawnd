@@ -76,6 +76,7 @@ export default function CompareResultsScreen() {
   
   const renderItem = ({ item }) => (
     <View style={styles.resultBox}>
+      <Text style={styles.name}>ID: {item.postid}</Text>
       <Text style={styles.name}>{item.pet2}</Text>
       {item.similarity !== undefined ? (
         <Text style={styles.similarity}>Similarity: {(item.similarity * 100).toFixed(2)}%</Text>
@@ -85,6 +86,7 @@ export default function CompareResultsScreen() {
       <Text style={styles.status}>{item.is_similar ? '✅ Likely Match' : '❌ Not Similar'}</Text>
     </View>
   );
+  
 
   if (loading) {
     return (
@@ -140,17 +142,48 @@ export default function CompareResultsScreen() {
     },
     listContainer: {
       flex: 1,
-      width: '80%',
+      alignSelf: 'center',
+      width: '90%',
+      marginBottom: 20,
     },
     listContent: {
       paddingBottom: 50,
     },
+    resultBox: {
+      backgroundColor: '#f2f2f2',
+      borderRadius: 10,
+      padding: 16,
+      marginBottom: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    name: {
+      fontFamily: 'JaldiBold',
+      fontSize: 18,
+    },
+    similarity: {
+      fontFamily: 'JaldiBold',
+      fontSize: 16,
+    },
+    status: {
+      fontFamily: 'JaldiBold',
+      fontSize: 16,
+      fontWeight: '500',
+    },
     button: {
-      marginBottom: 0,
       backgroundColor: 'black',
       borderRadius: 8,
       alignSelf: 'center',
       width: '80%',
     },
-  });
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  
+});
   

@@ -30,7 +30,7 @@ def compare():
 
     try:
         
-        response = supabase.table('posts').select('imageurl, petname').execute()
+        response = supabase.table('posts').select('postid, imageurl, petname').execute()
         posts = response.data
 
         if len(posts) < 1:
