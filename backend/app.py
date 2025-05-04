@@ -42,7 +42,7 @@ def compare():
             "petname": pet_name
         }
 
-        other_pets = posts[1:8] # 1-5
+        other_pets = posts[1:5] # 1-5
 
         result = compare_pet_to_many(new_pet, other_pets)
 
