@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, FlatList, StyleSheet, Alert } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useRouter, useLocalSearchParams } from 'expo-router';
 import colors from '../../constants/colors';
 import { Button } from 'react-native-paper';
 
 export default function CompareResultsScreen() {
   const { petName, imageUrl } = useLocalSearchParams();
   const [results, setResults] = useState([]);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,77 +95,62 @@ export default function CompareResultsScreen() {
     );
   }
 
-  return (
-    <FlatList
-      data={results}
-      keyExtractor={(item, index) => `${item.pet2}-${index}`}
-      renderItem={renderItem}
-      contentContainerStyle={styles.container}
-      ListHeaderComponent={
-        <View style={{ marginTop: 50 }}>
-          <Text style={styles.header}>Comparison Results</Text>
+    return (
+      <View style={styles.screen}>
+        {/* 🔝 Always visible title */}
+        <Text style={styles.header}>Comparison Results</Text>
+  
+        {/* 🔃 Scrollable results */}
+        <View style={styles.listContainer}>
+          <FlatList
+            data={results}
+            keyExtractor={(item, index) => `${item.pet2}-${index}`}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+          />
         </View>
-      }
-        ListFooterComponent={
+  
+        {/* 🔘 Always visible footer */}
         <Button
           mode="contained"
           onPress={() => router.push('/main')}
-          style={{
-            marginTop: 20,
-            backgroundColor: colors.primary,
-            borderRadius: 8,
-            padding: 6,
-            alignSelf: 'center',
-          }}
-          labelStyle={{
-            fontSize: 16,
-            fontFamily: 'JaldiBold',
-            color: 'white',
-          }}
+          style={styles.button}
+          labelStyle={{ fontFamily: 'JaldiBold', color: 'white' }}
         >
-          Back to home page
+          Back to Home Page
         </Button>
-      }
-    />
-  );
+      </View>
+    );
+  };
   
-}
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontFamily: 'JaldiBold',
-    color: colors.primary,
-    marginBottom: 12,
-  },
-  resultBox: {
-    backgroundColor: colors.background,
-    padding: 16,
-    marginVertical: 8,
-    borderRadius: 8,
-    borderColor: colors.primary,
-    borderWidth: 1,
-  },
-  name: {
-    fontSize: 18,
-    fontFamily: 'JaldiBold',
-    color: colors.primary,
-  },
-  similarity: {
-    fontSize: 16,
-    marginTop: 4,
-  },
-  status: {
-    marginTop: 4,
-    fontSize: 16,
-    fontFamily: 'JaldiRegular',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+  const styles = StyleSheet.create({
+    screen: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 80,
+      marginBottom: 80,
+    },
+    header: {
+      fontSize: 36,
+      fontFamily: 'JaldiBold',
+      color: '#333',
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    listContainer: {
+      flex: 1,
+      width: '80%',
+    },
+    listContent: {
+      paddingBottom: 50,
+    },
+    button: {
+      marginBottom: 0,
+      backgroundColor: 'black',
+      borderRadius: 8,
+      alignSelf: 'center',
+      width: '80%',
+    },
+  });
+  
