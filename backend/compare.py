@@ -161,6 +161,7 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                 vec2 = extract_vector(img2, extractor, device=device)
                 sim = cosine_sim(vec1, vec2)
                 results.append({
+                    "postid": other.get("postid"),
                     "pet1": new_pet['petname'],
                     "pet2": other['petname'],
                     "similarity": sim,
@@ -168,10 +169,12 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                 })
             except Exception as e:
                 results.append({
+                    "postid": other.get("postid"),
                     "pet1": new_pet['petname'],
                     "pet2": other.get('petname', 'unknown'),
                     "error": str(e)
                 })
+
 
         return {"results": results}
     except Exception as e:
