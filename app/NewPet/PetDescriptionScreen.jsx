@@ -1,5 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import { IconButton } from 'react-native-paper';
+
 import {
   View,
   Text,
@@ -49,15 +50,14 @@ export default function PetDescriptionScreen() {
         petname: name || 'Unknown',
         gender,
         description,
-        // address,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         imageurl: imageUri,
-        lost: isEnabled === 'false' || isEnabled === false, // ensure boolean
+        lost: isEnabled === 'false' || isEnabled === false,
         animaltype: petTypeValue,
         breed: petBreedValue,
         size: petSizeValue,
-        lostdate: new Date().toISOString(), // now
+        lostdate: new Date().toISOString(),
         userid: userIdValue,
       },
     ]);
@@ -67,9 +67,16 @@ export default function PetDescriptionScreen() {
       alert('Error saving post. Try again.');
     } else {
       alert('✅ Post added successfully!');
-      router.push('/main'); // or wherever you want to go after submit
+      router.push({
+        pathname: '/NewPet/CompareResultsScreen',
+        params: {
+          petName: name || 'Unknown',
+          imageUrl: imageUri,
+        },
+      });
     }
   };
+  
 
   return (
     <SafeAreaView style={styles.container}>

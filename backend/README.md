@@ -16,11 +16,6 @@ pip install -r requirements.txt
 
 ```
 
-# Launch script
-```
-python test-1.py
-```
-
 # Launch Flask server
 ```
 python app.py
