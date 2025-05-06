@@ -147,14 +147,6 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                     "is_similar": sim >= threshold
                 })
                 if sim >= threshold:
-                    print("⚠️ Inserting alert with:", {
-                        "postid_1": new_pet.get("postid"),
-                        "user_1": new_pet.get("userid"),
-                        "postid_2": other.get("postid"),
-                        "user_2": other.get("userid"),
-                        "similarity": sim
-                    })
-
                     add_alert(
                         postid_1=new_pet.get("postid"),
                         user_1=new_pet.get("userid"),

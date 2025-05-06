@@ -82,26 +82,78 @@ const MainPage = () => {
     const { data: alerts, error } = await supabase
       .from('alerts')
       .select('*')
-      .or(`and(user_1.eq.${userId},seen_by_user_1.eq.false),and(user_2.eq.${userId},seen_by_user_2.eq.false)`);
+      .or(
+        `and(user_1.eq.${userId},seen_by_user_1.eq.false),and(user_2.eq.${userId},seen_by_user_2.eq.false)`
+      );
   
     if (error) {
       console.error("❌ Error fetching alerts:", error.message);
       return;
     }
   
-    if (alerts.length > 0) {
-      Alert.alert("🎉 Match Found!", "You have a new similar pet match!");
-  
-      // Optionally mark alerts as seen
-      for (const alert of alerts) {
-        const seenField = alert.user_1 === userId ? "seen_by_user_1" : "seen_by_user_2";
-        await supabase
-          .from("alerts")
-          .update({ [seenField]: true })
-          .eq("id", alert.id);
-      }
+    if (!alerts || alerts.length === 0) {
+      console.log("✅ No unseen alerts");
+      return;
     }
+  
+    const match = alerts[0];
+    const matchingPostId =
+      match.user_1 === userId ? match.postid_2 : match.postid_1;
+  
+    Alert.alert(
+      "🎉 Match Found!",
+      "You have a new similar pet match!",
+      [
+        {
+          text: "View Match",
+          onPress: async () => {
+            // ✅ סימון ההתראה כ"נצפתה"
+            const seenField = match.user_1 === userId ? "seen_by_user_1" : "seen_by_user_2";
+  
+            await supabase
+              .from("alerts")
+              .update({ [seenField]: true })
+              .eq("id", match.id);
+  
+            // ✅ שליפת נתוני הפוסט המלאים
+            const { data: post, error } = await supabase
+              .from("posts")
+              .select("*")
+              .eq("postid", matchingPostId)
+              .single();
+  
+            if (error || !post) {
+              console.error("❌ Error fetching matched post:", error?.message);
+              Alert.alert("Error", "Failed to load matched post.");
+              return;
+            }
+  
+            // ✅ מעבר למסך post עם כל הפרטים
+            router.push({
+              pathname: "/post",
+              params: {
+                petName: post.petname,
+                imageUrl: post.imageurl,
+                lostDate: post.lostdate,
+                description: post.description,
+                address: post.address,
+                animalType: post.animaltype,
+                breed: post.breed,
+                size: post.size,
+                lost: post.lost,
+                latitude: post.latitude,
+                longitude: post.longitude,
+                gender: post.gender,
+                userID: post.userid,
+              },
+            });
+          },
+        },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
   };
+  
   
 
   const handleCardPress = (post) => {
