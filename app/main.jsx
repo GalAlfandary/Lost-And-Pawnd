@@ -9,7 +9,6 @@ import { useNavigation } from "@react-navigation/native"; // Import navigation h
 import LostCard from "../components/lostCard";
 import PawndCard from "../components/pawndCard";
 
-
 const MainPage = () => {
   const navigation = useNavigation();
   const [posts, setPosts] = useState([]);
@@ -21,7 +20,7 @@ const MainPage = () => {
 
   useEffect(() => {
     fetchPosts();
-    checkAlerts();
+    checkAlerts(router);
   }, []);
   
   
