@@ -8,6 +8,9 @@ from torch import nn
 import torch.nn.functional as F
 from torchvision import models, transforms
 
+from utils import add_alert
+
+
 # import the Weights enums for all ResNet variants you support
 from torchvision.models import (
     ResNet18_Weights, ResNet34_Weights,
@@ -115,30 +118,6 @@ def get_sim_images_by_url(url1, url2, model_name='resnet50', size=224, threshold
 
     return sim
 
-def compare_pets(post1, post2, model_name='resnet50', size=224, threshold=0.5, force_cpu=False):
-    """
-    Compare two pet images and return a similarity score or an error message.
-    """
-    try:
-        url1 = post1['imageurl']
-        petname1 = post1['petname']
-        url2 = post2['imageurl']
-        petname2 = post2['petname']
-
-        sim = get_sim_images_by_url(url1, url2, model_name=model_name, size=size, threshold=threshold, force_cpu=force_cpu)
-
-        result = {
-            "pet1": petname1,
-            "pet2": petname2,
-            "similarity": sim,
-            "is_similar": sim >= threshold
-        }
-        return {"result": result}
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return {"error": str(e)}
 
 
 def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, threshold=0.5, force_cpu=False):
@@ -167,6 +146,23 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                     "similarity": sim,
                     "is_similar": sim >= threshold
                 })
+                if sim >= threshold:
+                    print("⚠️ Inserting alert with:", {
+                        "postid_1": new_pet.get("postid"),
+                        "user_1": new_pet.get("userid"),
+                        "postid_2": other.get("postid"),
+                        "user_2": other.get("userid"),
+                        "similarity": sim
+                    })
+
+                    add_alert(
+                        postid_1=new_pet.get("postid"),
+                        user_1=new_pet.get("userid"),
+                        postid_2=other.get("postid"),
+                        user_2=other.get("userid"),
+                        similarity=sim
+                    )
+
             except Exception as e:
                 results.append({
                     "postid": other.get("postid"),

@@ -21,6 +21,7 @@ const MainPage = () => {
 
   useEffect(() => {
     fetchPosts();
+    checkAlerts();
   }, []);
   
   
@@ -74,6 +75,33 @@ const MainPage = () => {
   };
   
   
+  const checkAlerts = async () => {
+    const userResult = await supabase.auth.getUser();
+    const userId = userResult.data.user.id;
+  
+    const { data: alerts, error } = await supabase
+      .from('alerts')
+      .select('*')
+      .or(`and(user_1.eq.${userId},seen_by_user_1.eq.false),and(user_2.eq.${userId},seen_by_user_2.eq.false)`);
+  
+    if (error) {
+      console.error("❌ Error fetching alerts:", error.message);
+      return;
+    }
+  
+    if (alerts.length > 0) {
+      Alert.alert("🎉 Match Found!", "You have a new similar pet match!");
+  
+      // Optionally mark alerts as seen
+      for (const alert of alerts) {
+        const seenField = alert.user_1 === userId ? "seen_by_user_1" : "seen_by_user_2";
+        await supabase
+          .from("alerts")
+          .update({ [seenField]: true })
+          .eq("id", alert.id);
+      }
+    }
+  };
   
 
   const handleCardPress = (post) => {

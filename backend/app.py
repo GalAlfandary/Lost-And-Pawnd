@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 from supabase import create_client, Client
-from compare import compare_pets, compare_pet_to_many
+from compare import compare_pet_to_many
 
 # Load secrets once at startup
 with open('./secrets2.json', 'r') as f:
@@ -22,37 +22,34 @@ def is_alive():
 def compare():
     data = request.get_json()
 
-    if not data or 'pet_name' not in data or 'pet_picture' not in data:
-        return jsonify({"error": "Missing 'pet_name' or 'pet_picture' in request"}), 400
+    if not data or 'pet_name' not in data or 'pet_picture' not in data or 'postid' not in data or 'userid' not in data:
+        return jsonify({"error": "Missing required fields"}), 400
 
     pet_name = data['pet_name']
     pet_picture = data['pet_picture']
+    postid = data['postid']
+    userid = data['userid']
 
-    try:
-        
-        response = supabase.table('posts').select('postid, imageurl, petname').execute()
-        posts = response.data
+    #all other posts
+    response = supabase.table('posts').select('postid, imageurl, petname, userid').execute()
+    posts = response.data
 
-        if len(posts) < 1:
-            return jsonify({"error": "Not enough posts in the database"}), 500
+    if len(posts) < 1:
+        return jsonify({"error": "Not enough posts"}), 500
 
-        # Use pet info from request as post1
-        new_pet = {
-            "imageurl": pet_picture,
-            "petname": pet_name
-        }
+    new_pet = {
+        "imageurl": pet_picture,
+        "petname": pet_name,
+        "postid": postid,
+        "userid": userid
+    }
+    
+    # compare with  #all other posts 
+    other_pets = [p for p in posts if p['postid'] != postid]
 
-        other_pets = posts[1:8] 
+    result = compare_pet_to_many(new_pet, other_pets)
 
-        result = compare_pet_to_many(new_pet, other_pets)
-
-
-        return jsonify({
-            "result": result
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
+    return jsonify({ "result": result }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

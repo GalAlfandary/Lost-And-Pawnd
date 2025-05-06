@@ -45,7 +45,9 @@ export default function PetDescriptionScreen() {
   }, []);
 
   const handleNext = async () => {
-    const { data, error } = await supabase.from('posts').insert([
+    const { data, error } = await supabase
+    .from('posts')
+    .insert([
       {
         petname: name || 'Unknown',
         gender,
@@ -59,19 +61,25 @@ export default function PetDescriptionScreen() {
         size: petSizeValue,
         lostdate: new Date().toISOString(),
         userid: userIdValue,
-      },
-    ]);
+      }
+    ])
+    .select()
+    .single();
   
     if (error) {
       console.error('❌ Error saving to Supabase:', error.message);
       alert('Error saving post. Try again.');
     } else {
+      const insertedPostId = data?.postid;
+
       alert('✅ Post added successfully!');
       router.push({
         pathname: '/NewPet/CompareResultsScreen',
         params: {
           petName: name || 'Unknown',
           imageUrl: imageUri,
+          postid: insertedPostId,
+          userid: userIdValue
         },
       });
     }

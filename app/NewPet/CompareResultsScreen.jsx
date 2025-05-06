@@ -5,7 +5,7 @@ import colors from '../../constants/colors';
 import { Button } from 'react-native-paper';
 
 export default function CompareResultsScreen() {
-  const { petName, imageUrl } = useLocalSearchParams();
+  const { petName, imageUrl, postid, userid } = useLocalSearchParams();
   const [results, setResults] = useState([]);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,9 @@ export default function CompareResultsScreen() {
           body: JSON.stringify({
             pet_name: petName,
             pet_picture: imageUrl,
-          }),
+            postid: postid,
+            userid: userid
+          })
         });
   
         if (!res.ok) {
