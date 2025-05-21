@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ```
 
-# Launch Flask server
+# Launch quart server
 ```
 python app.py
 ```

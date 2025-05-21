@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from quart import Quart, request, jsonify
 import json
 from supabase import create_client, Client
 from compare import compare_pet_to_many
@@ -12,15 +12,15 @@ key = secrets["SUPABASE_ANON_KEY_SEC"]
 
 supabase: Client = create_client(url, key)
 
-app = Flask(__name__)
+app = Quart(__name__)
 
 @app.route('/is_alive', methods=['GET'])
-def is_alive():
+async def is_alive():
     return jsonify({"status": "Server is up"}), 200
 
 @app.route('/compare', methods=['POST'])
-def compare():
-    data = request.get_json()
+async def compare():
+    data = await request.get_json()
 
     if not data or 'pet_name' not in data or 'pet_picture' not in data or 'postid' not in data or 'userid' not in data:
         return jsonify({"error": "Missing required fields"}), 400
@@ -47,7 +47,7 @@ def compare():
     # compare with  #all other posts 
     other_pets = [p for p in posts if p['postid'] != postid]
 
-    result = compare_pet_to_many(new_pet, other_pets)
+    result = await compare_pet_to_many(new_pet, other_pets)
 
     return jsonify({ "result": result }), 200
 
