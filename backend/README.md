@@ -24,6 +24,9 @@ pip install -r requirements.txt
 # Launch quart server
 ```
 python app.py
+
+#test with: http://127.0.0.1:5000/is_alive
+
 ```
 
 # Test
