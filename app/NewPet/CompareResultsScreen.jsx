@@ -10,6 +10,12 @@ export default function CompareResultsScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  console.log('📝 Debug values received in CompareResultsScreen:');
+  console.log('  - petName:', petName);
+  console.log('  - imageUrl:', imageUrl);
+  console.log('  - postid:', postid);
+  console.log('  - userid:', userid);
+
   useEffect(() => {
     const comparePet = async () => {
       try {
@@ -94,98 +100,74 @@ export default function CompareResultsScreen() {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 10 }}>Comparing pets...</Text>
+        <Text style={{ marginTop: 10 }}>Loading...</Text>
       </View>
     );
   }
 
-    return (
-      <View style={styles.screen}>
-        {/* 🔝 Always visible title */}
-        <Text style={styles.header}>Comparison Results</Text>
-  
-        {/* 🔃 Scrollable results */}
-        <View style={styles.listContainer}>
-          <FlatList
-            data={results}
-            keyExtractor={(item, index) => `${item.pet2}-${index}`}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
-          />
-        </View>
-  
-        {/* 🔘 Always visible footer */}
-        <Button
-          mode="contained"
-          onPress={() => router.push('/main')}
-          style={styles.button}
-          labelStyle={{ fontFamily: 'JaldiBold', color: 'white' }}
-        >
-          Back to Home Page
-        </Button>
+  return (
+    <View style={styles.screen}>
+      {/* 🔝 Always visible title */}
+      <Text style={styles.header}>Thank You!</Text>
+
+      {/* 📝 Message */}
+      <View style={styles.messageContainer}>
+        <Text style={styles.message}>
+          We'll notify you if we find any matches for {petName}. Keep an eye on your notifications!
+        </Text>
       </View>
-    );
-  };
+
+      {/* 🔘 Always visible footer */}
+      <Button
+        mode="contained"
+        onPress={() => router.push('/main')}
+        style={styles.button}
+        labelStyle={{ fontFamily: 'JaldiBold', color: 'white' }}
+      >
+        Back to Home Page
+      </Button>
+    </View>
+  );
+};
   
 
-  const styles = StyleSheet.create({
-    screen: {
-      flex: 1,
-      paddingHorizontal: 16,
-      paddingTop: 80,
-      marginBottom: 80,
-    },
-    header: {
-      fontSize: 36,
-      fontFamily: 'JaldiBold',
-      color: '#333',
-      marginBottom: 10,
-      textAlign: 'center',
-    },
-    listContainer: {
-      flex: 1,
-      alignSelf: 'center',
-      width: '90%',
-      marginBottom: 20,
-    },
-    listContent: {
-      paddingBottom: 50,
-    },
-    resultBox: {
-      backgroundColor: '#f2f2f2',
-      borderRadius: 10,
-      padding: 16,
-      marginBottom: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    name: {
-      fontFamily: 'JaldiBold',
-      fontSize: 18,
-    },
-    similarity: {
-      fontFamily: 'JaldiBold',
-      fontSize: 16,
-    },
-    status: {
-      fontFamily: 'JaldiBold',
-      fontSize: 16,
-      fontWeight: '500',
-    },
-    button: {
-      backgroundColor: 'black',
-      borderRadius: 8,
-      alignSelf: 'center',
-      width: '80%',
-    },
-    centered: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-  
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 80,
+    marginBottom: 80,
+  },
+  header: {
+    fontSize: 36,
+    fontFamily: 'JaldiBold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  messageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  message: {
+    fontSize: 20,
+    fontFamily: 'JaldiRegular',
+    color: '#333',
+    textAlign: 'center',
+    lineHeight: 28,
+  },
+  button: {
+    backgroundColor: 'black',
+    borderRadius: 8,
+    alignSelf: 'center',
+    width: '80%',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
   

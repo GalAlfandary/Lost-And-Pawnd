@@ -71,6 +71,11 @@ export default function PetDescriptionScreen() {
       alert('Error saving post. Try again.');
     } else {
       const insertedPostId = data?.postid;
+      console.log('📝 Debug values before navigation:');
+      console.log('  - insertedPostId:', insertedPostId);
+      console.log('  - userIdValue:', userIdValue);
+      console.log('  - name:', name);
+      console.log('  - imageUri:', imageUri);
 
       alert('✅ Post added successfully!');
       router.push({
