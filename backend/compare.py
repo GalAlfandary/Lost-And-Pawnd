@@ -120,25 +120,33 @@ def get_sim_images_by_url(url1, url2, model_name='resnet50', size=224, threshold
 
 
 
-def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, threshold=0.5, force_cpu=False):
+async def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, threshold=0.5, force_cpu=False):
     """
     Compare one pet image to a list of other pets. Returns all similarity results in one JSON.
     """
     results = []
     try:
+        print(f"\n🔍 Starting comparison for pet: {new_pet['petname']}")
+        print(f"📊 Comparing against {len(other_pets)} other pets")
+        print(f"🎯 Similarity threshold: {threshold}")
+
         device = get_device(force_cpu)
         extractor = get_feature_extractor(model_name=model_name, device=device)
 
         # Get vector for main pet image once
+        print("🖼️ Processing main pet image...")
         img1 = download_and_preprocess_image(new_pet['imageurl'], image_size=size)
         vec1 = extract_vector(img1, extractor, device=device)
 
         # Compare to each other pet
         for other in other_pets:
             try:
+                print(f"\n🔄 Comparing with: {other['petname']}")
                 img2 = download_and_preprocess_image(other['imageurl'], image_size=size)
                 vec2 = extract_vector(img2, extractor, device=device)
                 sim = cosine_sim(vec1, vec2)
+                print(f"📈 Similarity score: {sim:.2f}")
+                
                 results.append({
                     "postid": other.get("postid"),
                     "pet1": new_pet['petname'],
@@ -147,7 +155,9 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                     "is_similar": sim >= threshold
                 })
                 if sim >= threshold:
-                    add_alert(
+                    print(f"🎯 Match found! Similarity: {sim:.2f}")
+                    print(f"📧 Creating alert and sending emails...")
+                    await add_alert(
                         postid_1=new_pet.get("postid"),
                         user_1=new_pet.get("userid"),
                         postid_2=other.get("postid"),
@@ -156,6 +166,7 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                     )
 
             except Exception as e:
+                print(f"❌ Error comparing with {other.get('petname', 'unknown')}: {str(e)}")
                 results.append({
                     "postid": other.get("postid"),
                     "pet1": new_pet['petname'],
@@ -163,9 +174,10 @@ def compare_pet_to_many(new_pet, other_pets, model_name='resnet50', size=224, th
                     "error": str(e)
                 })
 
-
+        print("\n✅ Comparison complete")
         return {"results": results}
     except Exception as e:
+        print(f"❌ Error in compare_pet_to_many: {str(e)}")
         import traceback
         traceback.print_exc()
         return {"error": str(e)}
