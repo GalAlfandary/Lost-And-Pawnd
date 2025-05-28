@@ -1,38 +1,39 @@
+// app/_layout.js
+import "react-native-gesture-handler";            // ➊ keep FIRST
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Text, TextInput } from "react-native";
-// import 'react-native-gesture-handler';
 
-
-// Prevent the splash screen from auto-hiding
+// prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    JaldiRegular: require("../assets/fonts/Jaldi-Regular.ttf"), // Load the custom font
-    JaldiBold: require("../assets/fonts/Jaldi-Bold.ttf"), // Load the custom font
+    JaldiRegular: require("../assets/fonts/Jaldi-Regular.ttf"),
+    JaldiBold: require("../assets/fonts/Jaldi-Bold.ttf"),
   });
 
+  /* wait for fonts, then hide splash */
   useEffect(() => {
-    if (fontsLoaded) {
-      console.log("Fonts loaded successfully");
-      SplashScreen.hideAsync();
-    }
+    if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
-  
 
-  if (!fontsLoaded) {
-    return null; // Keep the splash screen visible until fonts are loaded
-  }
+  if (!fontsLoaded) return null;
 
-  // Apply the custom font globally
+  /* apply default font globally */
   Text.defaultProps = Text.defaultProps || {};
   Text.defaultProps.style = { fontFamily: "JaldiRegular" };
 
   TextInput.defaultProps = TextInput.defaultProps || {};
   TextInput.defaultProps.style = { fontFamily: "JaldiRegular" };
 
-  return <Stack screenOptions={{ headerShown: false }} /> // Hide the header globally;
+  /* ➋ wrap everything in GestureHandlerRootView */
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </GestureHandlerRootView>
+  );
 }

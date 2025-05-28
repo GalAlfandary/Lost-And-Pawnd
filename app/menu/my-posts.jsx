@@ -19,6 +19,37 @@ export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const renderRightActions = (progress, dragX, onDelete) => (
+    <View                       /* width matches LostCard / PawndCard padding */
+      style={{
+        justifyContent: "center",
+        alignItems: "flex-end",
+        paddingRight: 24,
+        flex: 1,
+        backgroundColor: "tomato",
+      }}
+    >
+      <IconButton              /* from react-native-paper */
+        icon="trash-can-outline"
+        iconColor="#fff"
+        size={28}
+        onPress={onDelete}
+      />
+    </View>
+  );
+  
+  /* call this to actually delete from DB + local list */
+  const deletePost = async (postid) => {
+    const { error } = await supabase.from("posts").delete().eq("postid", postid);
+    if (error) {
+      Alert.alert("Error", "Could not delete post. Please try again.");
+      return false;
+    }
+    // success: filter it out of UI
+    setPosts((prev) => prev.filter((p) => p.postid !== postid));
+    return true;
+  };
+
   /* ───────── fetch current user’s posts ───────── */
   useEffect(() => {
     (async () => {
@@ -91,29 +122,45 @@ export default function MyPosts() {
 
       {/* list */}
       <ScrollView style={styles.scrollContainer}>
-        {posts.length === 0 ? (
-          <Text style={styles.emptyText}>You haven’t posted any pets yet.</Text>
-        ) : (
-          posts.map((post) =>
-            post.lost ? (
-              <LostCard
-                key={post.postid}
-                petName={post.petname}
-                imageUrl={post.imageurl}
-                lostDate={post.lostdate || "Unknown Date"}
-                onPress={() => openPost(post)}
-              />
-            ) : (
-              <PawndCard
-                key={post.postid}
-                petName={post.petname}
-                imageUrl={post.imageurl}
-                lostDate={post.lostdate || "Unknown Date"}
-                onPress={() => openPost(post)}
-              />
-            )
-          )
-        )}
+      {posts.length === 0 ? (
+  <Text style={styles.emptyText}>You haven’t posted any pets yet.</Text>
+) : (
+  posts.map((post) => {
+    const CardView = post.lost ? LostCard : PawndCard;
+
+    const confirmDelete = () =>
+      Alert.alert(
+        "Delete Post",
+        "Are you sure you want to delete this post? This can’t be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => deletePost(post.postid),
+          },
+        ]
+      );
+
+    return (
+      <Swipeable
+        key={post.postid}
+        renderRightActions={(progress, dragX) =>
+          renderRightActions(progress, dragX, confirmDelete)
+        }
+        friction={1.5} /* optional: slows the swipe a bit */
+      >
+        <CardView
+          petName={post.petname}
+          imageUrl={post.imageurl}
+          lostDate={post.lostdate || "Unknown Date"}
+          onPress={() => openPost(post)}
+        />
+      </Swipeable>
+    );
+  })
+)}
+
       </ScrollView>
     </View>
   );

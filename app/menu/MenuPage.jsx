@@ -57,9 +57,9 @@ export default function MenuPage() {
           <Text variant="titleMedium">
             {user?.user_metadata?.full_name || user?.email || "Guest"}
           </Text>
-          <Text variant="bodySmall" style={{ color: "#777" }}>
+          {/* <Text variant="bodySmall" style={{ color: "#777" }}>
             View Profile
-          </Text>
+          </Text> */}
         </View>
       </View>
 
@@ -76,11 +76,11 @@ export default function MenuPage() {
           left={(p) => <List.Icon {...p} icon="file-document-outline" />}
           onPress={() => goTo("menu/my-posts")}
         />
-        <List.Item
+        {/* <List.Item
           title="Settings"
           left={(p) => <List.Icon {...p} icon="cog-outline" />}
           onPress={() => goTo("settings")}
-        />
+        /> */}
       </List.Section>
 
       <Divider />
@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   profileRow: {
+    marginTop: 12,
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,

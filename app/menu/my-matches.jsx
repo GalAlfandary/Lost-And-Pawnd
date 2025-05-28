@@ -189,6 +189,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   scrollContainer: {
+    marginVertical: 16,
     backgroundColor: "#ffffff",
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,

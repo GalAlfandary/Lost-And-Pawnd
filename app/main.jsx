@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, Alert, ScrollView,Image } from "react-native";
 import { Text, Button, Card, Title, Switch,IconButton } from "react-native-paper";
 import { supabase } from "../supabase";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useFonts } from "expo-font";
 import colors from "../constants/colors";
 import { useNavigation } from "@react-navigation/native"; // Import navigation hook
@@ -19,12 +19,16 @@ const MainPage = () => {
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   useEffect(() => {
-    fetchPosts();
+    
     checkAlerts(router);
   }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();          // re-hits Supabase → UI reflects deletions
+    }, [fetchPosts])
+  );
   
-  
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -47,7 +51,7 @@ const MainPage = () => {
     finally {
       setLoading(false);
     }
-  };
+  }, []); 
   
   
   const checkAlerts = async () => {
