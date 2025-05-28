@@ -114,7 +114,13 @@ return publicUrl;
       alert('Please select a gender');
       return;
     }
-  
+
+    if(!imageUri)
+    {
+      alert('Please upload a photo');
+      return;
+    }
+
     let imageUrl = null;
   
     try {

@@ -3,6 +3,8 @@ import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Text, TextInput } from "react-native";
+// import 'react-native-gesture-handler';
+
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();

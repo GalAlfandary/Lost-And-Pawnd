@@ -81,6 +81,10 @@ useEffect(() => {
   
 
   const handleNext = () => {
+    if (!petTypeValue || !petBreedValue || !petSizeValue) {
+      alert('Please select all pet characteristics');
+      return;
+    }
     router.push({
       pathname: 'NewPet/PetDescriptionScreen',
       params: { isEnabled, name,gender, imageUri, address, latitude, longitude , petTypeValue, petBreedValue, petSizeValue }, // Pass the state as a parameter

@@ -24,30 +24,6 @@ const MainPage = () => {
   }, []);
   
   
-  // const fetchPosts = async () => {
-  //   try {
-  //     setLoading(true);
-  
-  //     const { data, error } = await supabase.rpc("get_posts_with_coordinates");
-
-  
-  //     if (error) {
-  //       console.error("Error fetching posts:", error.message);
-  //       Alert.alert("Error", "Could not fetch posts. Please try again.");
-  //       setPosts([]); // Clear posts on error (optional)
-  //     } else {
-  //       console.log("Fetched posts:", data);
-  //       setPosts(data || []); // Safely handle null response
-  //     }
-  //   } catch (err) {
-  //     console.error("Unexpected error fetching posts:", err);
-  //     Alert.alert("Unexpected Error", "Something went wrong.");
-  //     setPosts([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -191,7 +167,7 @@ const MainPage = () => {
         <View style={styles.titleContainer}>
           <IconButton
             icon="menu"
-            //onPress={() => navigation.openDrawer()} 
+            onPress={() => router.push("/menu/MenuPage")}
             size={24}
             style={styles.menuButton}
             iconColor={colors.primary}
@@ -293,7 +269,7 @@ const MainPage = () => {
       <View style={styles.titleContainer}>
       <IconButton
           icon="menu"
-          //onPress={() => router.push('../')}
+          onPress={() => router.push("/menu/MenuPage")} // Use router to navigate to the menu
           size={24}
           style={styles.menuButton}
           iconColor={colors.primary}
