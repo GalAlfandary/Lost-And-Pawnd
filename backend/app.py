@@ -30,23 +30,35 @@ async def compare():
     postid = data['postid']
     userid = data['userid']
 
-    #all other posts
-    response = supabase.table('posts').select('postid, imageurl, petname, userid').execute()
-    posts = response.data
+    is_lost = data.get("lost") 
+    # find out if THIS post is lost or pawnd
+    if is_lost is None:
+        resp = supabase.table('posts').select('lost').eq('postid', postid).single().execute()
+        if not resp.data: 
+            return jsonify({"error": "Cannot read post type"}), 500
+        is_lost = resp.data['lost']
 
-    if len(posts) < 1:
-        return jsonify({"error": "Not enough posts"}), 500
+    # fetch ONLY opposite-type, still-existing posts 
+    other_resp = (
+        supabase.table('posts')
+        .select('postid, imageurl, petname, userid')
+        .eq('lost', not is_lost)          # opposite group
+        .neq('postid', postid)            # skip self
+        .execute()
+    )
+    other_pets = other_resp.data or []
+    if not other_pets:
+        return jsonify({"message": "No opposite-type posts to compare"}), 200
 
-    new_pet = {
-        "imageurl": pet_picture,
-        "petname": pet_name,
-        "postid": postid,
-        "userid": userid
-    }
+
+    # assemble the “new_pet” record 
+    new_pet = dict(
+        imageurl = pet_picture,
+        petname  = pet_name,
+        postid   = postid,
+        userid   = userid,
+    )
     
-    # compare with  #all other posts 
-    other_pets = [p for p in posts if p['postid'] != postid]
-
     result = await compare_pet_to_many(new_pet, other_pets)
 
     return jsonify({ "result": result }), 200
