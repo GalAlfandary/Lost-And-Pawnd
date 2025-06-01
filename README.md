@@ -1,55 +1,54 @@
-<<<<<<< HEAD
-# Lost-and-Pawnd
-Gal Alfandary &amp; Lina Flat Final Project - B.Sc. computer Science
-=======
-# Welcome to your Expo app 👋
+# Lost&nbsp;&amp;&nbsp;Pawnd 📱🐶🐱  
+*Final B.Sc. Computer-Science Project*  
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **Authors:**  
+> **Gal Alfandary** – gal.alfandary@example.com  
+> **Lina Flat** – lina.flat@example.com  
 
-## Get started
+Finding lost pets & re-uniting them with their humans, powered by on-device image processing and a community-driven database.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## ✨ What is Lost & Pawnd?
 
-2. Start the app
+Lost & Pawnd is a React-Native + Expo app that lets anyone
 
-   ```bash
-    npx expo start
-   ```
+1. **Snap or upload a photo** of a pet they found (or lost).  
+2. **Run a vision pipeline** (OpenCV + TensorFlow Lite) on-device to extract colour, breed and facial-landmark features.  
+3. **Query the cloud database** for visually similar pets.  
+4. **Contact the matching owner / finder** through chat or one-tap call.
 
-In the output, you'll find options to open the app in a
+Our goal: cut the time between “I lost my dog” and “He’s back on the couch” from days to minutes.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+<p align="center">
+  <!-- Replace the image below with a real screenshot -->
+  <img src="docs/screenshot_placeholder.png" alt="Lost & Pawnd screenshot" width="240">
+</p>
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 🚀 Features
 
-When you're ready, run:
+| Area | Highlights |
+|------|------------|
+| **Image processing** | • CNN encoder for fur & colour histograms<br>• Ear-shape & muzzle landmark detection<br>• Breed classification (90 %+) |
+| **Search & match** | • pgvector similarity index in Postgres<br>• Text fallback (breed + colour) |
+| **Realtime updates** | • Supabase Channels “match found” push<br>• Expo Notifications |
+| **Map & location** | • Reverse-geocode last-seen coords<br>• Nearby matches in MapView |
+| **Community tools** | • Report spam / false positives<br>• Reputation score per user |
+| **Offline first** | • SQLite cache of recent posts<br>• Background sync |
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🛠️ Tech Stack
 
-## Learn more
+| Layer  | Tech |
+|--------|------|
+| **Mobile**  | React Native, Expo Router, React Navigation |
+| **Vision**  | OpenCV.js, TensorFlow Lite, MMKV caching |
+| **Backend** | Supabase (Postgres + RLS, Storage, Auth, Realtime) |
+| **Search**  | pgvector similarity index |
+| **Maps**    | react-native-maps, OpenStreetMap reverse-geocode |
+| **CI / CD** | Expo EAS Build & Submit, GitHub Actions |
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
->>>>>>> e94c798 (Initial commit)
+---
