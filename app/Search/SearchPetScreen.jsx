@@ -195,7 +195,7 @@ export default function SearchPetScreen() {
 
 
         {/* LOCATION ----------------------------------------------------- */}
-        <Text style={styles.sectionLabel}>Pet Location</Text>
+        {/* <Text style={styles.sectionLabel}>Pet Location</Text> */}
         {/* <View style={styles.switchRow}>
           <Switch
             value={locationEnabled}
@@ -204,7 +204,7 @@ export default function SearchPetScreen() {
           <Text style={styles.switchLabel}>Find pets near my location</Text>
         </View> */}
 
-        
+{/*         
         {!locationEnabled && (
           <AddressAutocomplete
             value={address}
@@ -234,7 +234,7 @@ export default function SearchPetScreen() {
               });
             }}
           />
-        )}
+        )} */}
 
         {/* STATUS */}
         <Text style={styles.sectionLabel}>Pet Status</Text>

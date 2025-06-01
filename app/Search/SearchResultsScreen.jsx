@@ -14,67 +14,56 @@ import colors from '../../constants/colors';
 import LostCard from '../../components/lostCard';
 import PawndCard from '../../components/pawndCard';
 
-/* ───────── helpers: build a supabase filter chain ───────── */
-function buildQuery({
-  petType,
-  petBreedValue,
-  name,
-  // latitude,
-  // longitude,
-  // locationEnabled,
-  status,
-  gender,
-  size,
-}) {
+/* ---------- build the Supabase query -------------------- */
+function buildQuery(rawParams) {
+  // ── 1. normalise params coming from useLocalSearchParams()
+  const normalize = (key, def = '') => {
+    const v = rawParams[key];
+    return Array.isArray(v) ? v[0] || def : v ?? def;
+  };
+
+  const petType       = normalize('petType', 'all');       // 'dog' | 'cat' | 'all'
+  const breedValue    = normalize('petBreedValue', 'not_relevant');
+  const name          = normalize('name', '');
+  const status        = normalize('status', 'both');       // 'lost' | 'pawnd' | 'both'
+  const gender        = normalize('gender', 'both');       // 'male' | 'female' | 'both'
+  const size          = normalize('size', 'all');          // 'small' | ... | 'all'
+
+  // ── 2. start query
   let query = supabase
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false });
 
-  /* species ------------------------------------------------ */
-  if (petType && petType !== 'all') {
-    query = query.eq('pettype', petType);
+  // ── 3. apply filters only when they are *really* requested
+  if (petType !== 'all') {
+    // DB stores "Dog" / "Cat" with capital letter – ilike ignores case
+    query = query.ilike('animaltype', petType);
   }
 
-  /* breed -------------------------------------------------- */
-  if (
-    petBreedValue &&
-    petBreedValue !== 'not_relevant' &&
-    petBreedValue !== 'unknown'
-  ) {
-    query = query.eq('breed', petBreedValue);
+  if (breedValue !== 'not_relevant' && breedValue !== 'unknown') {
+    query = query.ilike('breed', breedValue);
   }
 
-  /* name (LIKE, case-insensitive) -------------------------- */
-  if (name) query = query.ilike('petname', `%${name}%`);
-
-  /* status -> lost / pawnd --------------------------------- */
-  if (status !== 'both') query = query.eq('status', status); // string col
-
-  /* gender ------------------------------------------------- */
-  if (gender !== 'both') query = query.eq('gender', gender);
-
-  /* size --------------------------------------------------- */
-  if (size !== 'all') query = query.eq('size', size);
-
-  /* geosearch (optional) ----------------------------------- */
-  if (locationEnabled && latitude && longitude) {
-    // you need a PostGIS function on your DB for distance queries.
-    // Example: 'posts_nearby(lat, lon, radius_km)'
-    query = supabase.rpc('posts_nearby', {
-      lat: latitude,
-      lon: longitude,
-      radius_km: 10, // or expose a slider
-    });
+  if (name.trim() !== '') {
+    query = query.ilike('petname', `%${name.trim()}%`);
   }
 
-  return query;
+  if (status === 'lost') query  = query.eq('lost', true);
+  if (status === 'pawnd') query = query.eq('lost', false);
+  // status === 'both'  → no filter
+
+  if (gender !== 'both') query = query.ilike('gender', gender); 
+  if (size   !== 'all')  query = query.eq('size', size);
+
+  return query; // caller still does: const { data, error } = await query;
 }
+
 
 /* ───────── main component ───────── */
 export default function SearchResults() {
   const router  = useRouter();
-  const params  = useLocalSearchParams();      // ← all values from the search form
+  const params  = useLocalSearchParams();   // params from the search form
   const [posts, setPosts]     = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -97,9 +86,26 @@ export default function SearchResults() {
   }, []); // params are static for this screen
 
   /* card helpers ------------------------------------------ */
-  const openPost = (post) => router.push({ pathname: 'Post', params: { id: post.postid } });
-  const confirmDelete = (post) => Alert.alert('Delete not implemented yet');
-  const renderRightActions = () => null; // keep swipeable for future actions
+   const openPost = (post) =>
+       router.push({
+         pathname: '../post',           // use the exact file name
+         params: {
+           petName:     post.petname,
+           imageUrl:    post.imageurl,
+           lostDate:    post.lostdate,
+           description: post.description,
+           address:     post.address,
+           animalType:  post.animaltype,
+           breed:       post.breed,
+           size:        post.size,
+           lost:        String(post.lost), 
+           latitude:    post.latitude,
+           longitude:   post.longitude,
+           gender:      post.gender,
+           userID:      post.userid,
+         },
+       });
+  const renderRightActions = () => null;
 
   /* ui: loading ------------------------------------------- */
   if (loading) {
@@ -126,18 +132,14 @@ export default function SearchResults() {
 
       {/* list */}
       <ScrollView style={styles.scrollContainer}>
+        
         {posts.length === 0 ? (
           <Text style={styles.emptyText}>No posts found with this search</Text>
         ) : (
           posts.map((post) => {
-            const Card = post.status === 'lost' ? LostCard : PawndCard;
+            const Card = post.lost ? LostCard : PawndCard;  
             return (
-              <Swipeable
-                key={post.postid}
-                renderRightActions={(progress, dragX) =>
-                  renderRightActions(progress, dragX, confirmDelete)
-                }
-              >
+              <Swipeable key={post.postid} renderRightActions={renderRightActions}>
                 <Card
                   petName={post.petname}
                   imageUrl={post.imageurl}
