@@ -34,7 +34,7 @@ const Login = () => {
         return;
       }
   
-      Alert.alert('Login Successful', 'Welcome back!');
+      //Alert.alert('Login Successful', 'Welcome back!');
       await AsyncStorage.setItem('user', JSON.stringify(data.user)); // Store user data in AsyncStorage
       router.push('/main'); // Navigate to the main page
     } catch (error) {

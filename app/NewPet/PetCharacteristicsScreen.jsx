@@ -152,6 +152,7 @@ useEffect(() => {
     setValue={setPetBreedValue}
     setItems={setPetBreedItems}
     placeholder="Select pet breed"
+    
     style={{
       backgroundColor: colors.background,
       marginBottom: 16,

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconButton } from 'react-native-paper';
-
 import {
   View,
   Text,
@@ -13,133 +12,278 @@ import {
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import colors from '../../constants/colors';
+import { useRouter } from 'expo-router';
+import { CATS_API_KEY } from '../../constants/secrets';
 
+import AddressAutocomplete from '../../components/AddressAutoComplete';
 export default function SearchPetScreen() {
-  const [petType, setPetType] = useState('dog'); // dog, cat, all
+  const router = useRouter();
 
-  const [nameEnabled, setNameEnabled] = useState(false);
-  const [name, setName] = useState('');
+  /* ------------------------------------------------------------------ */
+  /*  STATE                                                             */
+  /* ------------------------------------------------------------------ */
+  const [petType, setPetType] = useState('dog');
 
-  const [locationEnabled, setLocationEnabled] = useState(false);
-  const [location, setLocation] = useState('');
+  const [petBreedOpen,   setPetBreedOpen]   = useState(false);
+  const [petBreedValue,  setPetBreedValue]  = useState(null);
+  const [petBreedItems,  setPetBreedItems]  = useState([]);
+  const NOT_RELEVANT  = { label: 'Not relevant', value: 'not_relevant' };
+  const unknownOption = { label: "Don't know / Unknown", value: 'unknown' };
 
-  const [raceOpen, setRaceOpen] = useState(false);
-  const [raceValue, setRaceValue] = useState(null);
-  const [raceItems, setRaceItems] = useState([
-    { label: 'All Races', value: 'all' },
-    { label: 'Labrador', value: 'labrador' },
-    { label: 'Siamese', value: 'siamese' },
-  ]);
+  const [nameEnabled,     setNameEnabled]     = useState(false);
+  const [name,            setName]            = useState('');
+
+  /* ----------  location / autocomplete ----------------------------- */
+  const [locationEnabled, setLocationEnabled] = useState(false); // “near me” toggle
+  const [address,         setAddress]         = useState('');    // ⭐ renamed
+  const [latitude,        setLatitude]        = useState(null);  // ⭐
+  const [longitude,       setLongitude]       = useState(null);  // ⭐
+  const [region,          setRegion]          = useState(null);  // ⭐
 
   const [status, setStatus] = useState('both');
   const [gender, setGender] = useState('both');
-  const [size, setSize] = useState('all');
+  const [size,   setSize]   = useState('all');
 
+  /* ------------------------------------------------------------------ */
+  /*  FETCH / RESET BREEDS WHEN PET TYPE CHANGES                        */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    const fetchBreeds = async () => {
+      if (petType === 'all') {
+        setPetBreedItems([NOT_RELEVANT]);
+        setPetBreedValue('not_relevant');
+        return;
+      }
+
+      if (petType === 'dog') {
+        const res  = await fetch('https://dog.ceo/api/breeds/list/all');
+        const data = await res.json();
+        const flat = Object.entries(data.message).flatMap(([breed, subs]) =>
+          subs.length
+            ? subs.map((s) => ({ label: `${breed} (${s})`, value: `${breed}-${s}` }))
+            : [{ label: breed, value: breed }],
+        );
+        setPetBreedItems([unknownOption, ...flat]);
+      }
+
+      if (petType === 'cat') {
+        const res  = await fetch('https://api.thecatapi.com/v1/breeds', {
+          headers: { 'x-api-key': CATS_API_KEY },
+        });
+        const data = await res.json();
+        const cat  = data.map((b) => ({ label: b.name, value: b.id }));
+        setPetBreedItems([unknownOption, ...cat]);
+      }
+    };
+
+    fetchBreeds();
+  }, [petType]);
+
+  /* ------------------------------------------------------------------ */
+  /*  SEARCH HANDLER                                                    */
+  /* ------------------------------------------------------------------ */
   const handleSearch = () => {
-    console.log({ petType, name, location, raceValue, status, gender, size });
+    console.log({
+      petType,
+      petBreedValue,
+      name,
+      address,               
+      latitude, longitude,  
+      region,                
+      status,
+      gender,
+      size,
+    });
+    router.push({
+      pathname: 'Search/SearchResultsScreen',
+      params: {
+        petType,
+        petBreed: petBreedValue,
+        name,
+        address,               
+        latitude,
+        longitude,
+        region,
+        status, 
+        }
+      });
+
   };
 
+  /* ------------------------------------------------------------------ */
+  /*  UI                                                                */
+  /* ------------------------------------------------------------------ */
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* header */}
         <View style={styles.titleContainer}>
-                <IconButton
-                  icon="arrow-left"
-                  onPress={() => router.back()}
-                  size={24}
-                  style={styles.backButton}
-                  iconColor={colors.primary}
-                />
-                <Text style={styles.pageTitle}>Search Pet</Text>
-                
-              </View>
-        <Text style={styles.title}>Looking for a specific pet?{'\n'}Let’s help you find it!</Text>
+          <IconButton
+            icon="arrow-left"
+            onPress={() => router.back()}
+            size={24}
+            style={styles.backButton}
+            iconColor={colors.primary}
+          />
+          <Text style={styles.pageTitle}>Search Pet</Text>
+        </View>
 
-        {/* Pet Type Selector */}
+        <Text style={styles.title}>
+          Looking for a specific pet?{'\n'}Let’s help you find it!
+        </Text>
+
+        {/* PET TYPE */}
         <Text style={styles.sectionLabel}>Pet Type</Text>
         <View style={styles.typeRow}>
           {['dog', 'cat', 'all'].map((type) => (
             <TouchableOpacity
               key={type}
-              style={[styles.typeButton, petType === type && styles.typeButtonActive]}
+              style={[
+                styles.typeButton,
+                petType === type && styles.typeButtonActive,
+              ]}
               onPress={() => setPetType(type)}
             >
-              <Text style={[styles.typeText, petType === type && styles.typeTextActive]}>
-                {type === 'dog' ? '🐶 Dog' : type === 'cat' ? '🐱 Cat' : 'All'}
+              <Text
+                style={[
+                  styles.typeText,
+                  petType === type && styles.typeTextActive,
+                ]}
+              >
+                {type === 'dog'
+                  ? '🐶 Dog'
+                  : type === 'cat'
+                  ? '🐱 Cat'
+                  : 'All'}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Race Dropdown */}
+        {/* BREED */}
         <Text style={styles.sectionLabel}>Pet Breed</Text>
         <DropDownPicker
-          open={raceOpen}
-          value={raceValue}
-          items={raceItems}
-          setOpen={setRaceOpen}
-          setValue={setRaceValue}
-          setItems={setRaceItems}
-          placeholder="All Races"
-          zIndex={3000}
-          zIndexInverse={1000}
-          style={styles.dropdown}
-          dropDownContainerStyle={{ backgroundColor: colors.background }}
+          open={petBreedOpen}
+          value={petBreedValue}
+          items={petBreedItems}
+          setOpen={setPetBreedOpen}
+          setValue={setPetBreedValue}
+          setItems={setPetBreedItems}
+          placeholder="Select pet breed"
+          listMode="SCROLLVIEW"
+          disabled={petType === 'all'}
+          style={[
+            styles.dropdown,
+            petType === 'all' && { opacity: 0.6 },
+          ]}
+          dropDownContainerStyle={{ borderColor: colors.background }}
         />
+{/* NAME ------------------------------------------------------- */}
+<Text style={styles.sectionLabel}>Pet Name</Text>
+<View style={styles.switchRow}>
+  <Switch value={nameEnabled} onValueChange={setNameEnabled} />
+  <Text style={styles.switchLabel}>Don’t search by specific name</Text>
+</View>
+<TextInput
+  editable={!nameEnabled}
+  placeholder="Pet Name"
+  value={name}
+  onChangeText={setName}
+  style={[styles.input, nameEnabled && styles.disabledInput]}
+/>
 
-        {/* Name Toggle & Input */}
-        <Text style={styles.sectionLabel}>Pet Name</Text>
-        <View style={styles.switchRow}>
-          <Switch value={nameEnabled} onValueChange={setNameEnabled} />
-          <Text style={styles.switchLabel}>Don’t search by specific name</Text>
-        </View>
-        <TextInput
-          editable={!nameEnabled}
-          placeholder="Pet Name"
-          value={name}
-          onChangeText={setName}
-          style={[styles.input, nameEnabled && styles.disabledInput]}
-        />
 
-        {/* Location Toggle & Input */}
+
+        {/* LOCATION ----------------------------------------------------- */}
         <Text style={styles.sectionLabel}>Pet Location</Text>
-        <View style={styles.switchRow}>
-          <Switch value={locationEnabled} onValueChange={setLocationEnabled} />
+        {/* <View style={styles.switchRow}>
+          <Switch
+            value={locationEnabled}
+            onValueChange={setLocationEnabled}
+          />
           <Text style={styles.switchLabel}>Find pets near my location</Text>
-        </View>
-        <TextInput
-          editable={!locationEnabled}
-          placeholder="Location"
-          value={location}
-          onChangeText={setLocation}
-          style={[styles.input, locationEnabled && styles.disabledInput]}
-        />
+        </View> */}
 
-        {/* Pet Status */}
+        
+        {!locationEnabled && (
+          <AddressAutocomplete
+            value={address}
+            onChangeText={setAddress}
+            onSelect={(place) => {
+              const { formatted, lat, lon } = place.properties;
+              setAddress(formatted);
+              setLatitude(lat);
+              setLongitude(lon);
+              setRegion({
+                latitude:  parseFloat(lat),
+                longitude: parseFloat(lon),
+                latitudeDelta:  0.005,
+                longitudeDelta: 0.005,
+              });
+            }}
+            onLocationPicked={(place) => {
+              const { formatted, lat, lon } = place;
+              setAddress(formatted);
+              setLatitude(lat);
+              setLongitude(lon);
+              setRegion({
+                latitude:  parseFloat(lat),
+                longitude: parseFloat(lon),
+                latitudeDelta:  0.005,
+                longitudeDelta: 0.005,
+              });
+            }}
+          />
+        )}
+
+        {/* STATUS */}
         <Text style={styles.sectionLabel}>Pet Status</Text>
         {['lost', 'pawnd', 'both'].map((s) => (
-          <TouchableOpacity key={s} onPress={() => setStatus(s)} style={styles.checkboxRow}>
-            <Text>{status === s ? '✅' : '⬜️'} {s === 'lost' ? 'Lost Pet' : s === 'pawnd' ? 'Pawnd Pet' : 'Both'}</Text>
+          <TouchableOpacity
+            key={s}
+            onPress={() => setStatus(s)}
+            style={styles.checkboxRow}
+          >
+            <Text>
+              {status === s ? '✅' : '⬜️'}{' '}
+              {s === 'lost' ? 'Lost Pet' : s === 'pawnd' ? 'Pawnd Pet' : 'Both'}
+            </Text>
           </TouchableOpacity>
         ))}
 
-        {/* Pet Gender */}
+        {/* GENDER */}
         <Text style={styles.sectionLabel}>Pet Gender</Text>
         {['male', 'female', 'both'].map((g) => (
-          <TouchableOpacity key={g} onPress={() => setGender(g)} style={styles.checkboxRow}>
-            <Text>{gender === g ? '✅' : '⬜️'} {g === 'male' ? '♂ Male' : g === 'female' ? '♀ Female' : 'Both'}</Text>
+          <TouchableOpacity
+            key={g}
+            onPress={() => setGender(g)}
+            style={styles.checkboxRow}
+          >
+            <Text>
+              {gender === g ? '✅' : '⬜️'}{' '}
+              {g === 'male' ? '♂ Male' : g === 'female' ? '♀ Female' : 'Both'}
+            </Text>
           </TouchableOpacity>
         ))}
 
-        {/* Pet Size */}
+        {/* SIZE */}
         <Text style={styles.sectionLabel}>Pet Size</Text>
         {['small', 'medium', 'large', 'all'].map((s) => (
-          <TouchableOpacity key={s} onPress={() => setSize(s)} style={styles.checkboxRow}>
-            <Text>{size === s ? '✅' : '⬜️'} {s === 'all' ? 'All Sizes' : s.charAt(0).toUpperCase() + s.slice(1)}</Text>
+          <TouchableOpacity
+            key={s}
+            onPress={() => setSize(s)}
+            style={styles.checkboxRow}
+          >
+            <Text>
+              {size === s ? '✅' : '⬜️'}{' '}
+              {s === 'all'
+                ? 'All Sizes'
+                : s.charAt(0).toUpperCase() + s.slice(1)}
+            </Text>
           </TouchableOpacity>
         ))}
 
-        {/* Search Button */}
+        {/* SEARCH BUTTON */}
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchText}>Search Pet</Text>
         </TouchableOpacity>
@@ -147,6 +291,8 @@ export default function SearchPetScreen() {
     </SafeAreaView>
   );
 }
+
+/* STYLES (unchanged except input removed) */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scrollContent: { padding: 16, paddingBottom: 48 },
@@ -156,7 +302,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JaldiBold',
     color: colors.primary,
     lineHeight: 40,
-
+    paddingTop: 16,
   },
   pageTitle: {
     fontSize: 16,
@@ -173,10 +319,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   backButton: {
-    backgroundColor: colors.background, // Semi-transparent white
+    backgroundColor: colors.background,
     borderRadius: 50,
-    alignContent: 'flex-start',
-    justifyContent: 'flex-start',
   },
   sectionLabel: {
     fontSize: 16,
@@ -185,11 +329,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JaldiBold',
     color: colors.primary,
   },
-  typeRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
+  typeRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   typeButton: {
     flex: 1,
     backgroundColor: '#eee',
@@ -197,16 +337,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
   },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  typeText: {
-    color: colors.primary,
-    fontFamily: 'JaldiBold',
-  },
-  typeTextActive: {
-    color: '#fff',
-  },
+  typeButtonActive: { backgroundColor: colors.primary },
+  typeText: { color: colors.primary, fontFamily: 'JaldiBold' },
+  typeTextActive: { color: '#fff' },
   dropdown: {
     backgroundColor: colors.background,
     borderColor: colors.background,
@@ -219,21 +352,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontFamily: 'JaldiRegular',
   },
-  disabledInput: {
-    opacity: 0.5,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  switchLabel: {
-    marginLeft: 8,
-    fontFamily: 'JaldiRegular',
-  },
-  checkboxRow: {
-    marginBottom: 8,
-  },
+  disabledInput: { opacity: 0.5 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  switchLabel: { marginLeft: 8, fontFamily: 'JaldiRegular' },
+  checkboxRow: { marginBottom: 8 },
   searchButton: {
     marginTop: 32,
     backgroundColor: '#000',

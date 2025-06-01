@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, Alert, ScrollView,Image } from "react-native";
-import { Text, Button, Card, Title, Switch,IconButton } from "react-native-paper";
+import { View, StyleSheet, Alert, ScrollView, Image, AppState } from "react-native";
+import { Text, Button, Card, Title, Switch, IconButton } from "react-native-paper";
 import { supabase } from "../supabase";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useFonts } from "expo-font";
@@ -10,6 +10,8 @@ import LostCard from "../components/lostCard";
 import PawndCard from "../components/pawndCard";
 
 const MainPage = () => {
+  console.log("[MainPage] component mounted");
+
   const navigation = useNavigation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,16 +20,7 @@ const MainPage = () => {
 
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
-  useEffect(() => {
-    
-    checkAlerts(router);
-  }, []);
-  useFocusEffect(
-    useCallback(() => {
-      fetchPosts();          // re-hits Supabase → UI reflects deletions
-    }, [fetchPosts])
-  );
-  
+  /* 1️⃣ fetchPosts first, so it exists before useFocusEffect runs */
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
@@ -38,21 +31,44 @@ const MainPage = () => {
       if (error) {
         console.error("Error fetching posts:", error.message);
         Alert.alert("Error", "Could not fetch posts. Please try again.");
-        setPosts([]); // Clear posts on error (optional)
+        setPosts([]);
       } else {
-        console.log("Fetched posts:", data);
-        setPosts(data || []); // Safely handle null response
+        setPosts(data || []);
       }
     } catch (err) {
       console.error("Unexpected error fetching posts:", err);
       Alert.alert("Unexpected Error", "Something went wrong.");
       setPosts([]);   
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   }, []); 
-  
+
+  /* 2️⃣ run once on mount for alerts */
+  useEffect(() => {
+    checkAlerts();
+  }, []);
+
+  /* 3️⃣ run every time the screen gains focus */
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [fetchPosts])
+  );
+
+  /* 4️⃣ handle app state changes */
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        console.log("[MainPage] App came to foreground");
+        fetchPosts();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [fetchPosts]);
   
   const checkAlerts = async () => {
     const userResult = await supabase.auth.getUser();
@@ -86,7 +102,7 @@ const MainPage = () => {
         {
           text: "View Match",
           onPress: async () => {
-            // ✅ סימון ההתראה כ"נצפתה"
+            // Mark as seen
             const seenField = match.user_1 === userId ? "seen_by_user_1" : "seen_by_user_2";
   
             await supabase
@@ -94,7 +110,7 @@ const MainPage = () => {
               .update({ [seenField]: true })
               .eq("id", match.id);
   
-            // ✅ שליפת נתוני הפוסט המלאים
+            // Fetch the matching post details
             const { data: post, error } = await supabase
               .from("posts")
               .select("*")
@@ -219,7 +235,7 @@ const MainPage = () => {
         <Button
           mode="contained"
           style={styles.searchButton}
-          onPress={() => router.push("/lost-pets")}
+          onPress={() => router.push("/Search/SearchPetScreen")}
           labelStyle={{
             fontFamily: 'JaldiBold',
             fontSize: 16,
@@ -322,7 +338,7 @@ const MainPage = () => {
         <Button
           mode="contained"
           style={styles.searchButton}
-          onPress={() => router.push("/lost-pets")}
+          onPress={() => router.push("/Search/SearchPetScreen")}
           labelStyle={{
             fontFamily: 'JaldiBold',
             fontSize: 16,

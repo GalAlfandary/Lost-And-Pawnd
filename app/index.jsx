@@ -19,6 +19,15 @@ import MainPage from './main';
 
 
 const Home = () => {
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        router.replace("/main");      // skip login altogether
+      }
+    })();
+  }, []);
+  
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -57,7 +66,7 @@ const Home = () => {
 useEffect(() => {
   const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
-      console.log('✅ User logged in!', session.user);
+      // console.log('✅ User logged in!', session.user);
       router.push('/main'); // ✅ Redirect after login
     }
   });
@@ -93,7 +102,7 @@ useEffect(() => {
         >
           Login
         </Button>
-        <Button
+        {/* <Button
           mode="contained"
           onPress={handleGoogle}
           loading={loading}
@@ -112,7 +121,7 @@ useEffect(() => {
         >
           <Image source={require('../assets/images/Google.png')} style={styles.google} />
           Continue with Google
-        </Button>
+        </Button> */}
         <TouchableOpacity onPress={handleSignUp} style={styles.ghostButton}>
         <Text style={styles.ghostButtonText}>Or Sign Up Manually</Text>
       </TouchableOpacity>

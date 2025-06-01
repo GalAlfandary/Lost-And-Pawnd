@@ -37,44 +37,6 @@ export default function PetLocationScreen() {
   } = params; // Get the value from the previous screen
   
   
-  const handleUseCurrentLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Permission to access location was denied');
-        return;
-      }
-  
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-  
-      const { latitude, longitude } = location.coords;
-      console.log('Current location:', { latitude, longitude });
-      setLatitude(latitude);
-      setLongitude(longitude);
-      const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
-  
-      let readableAddress = 'Current Location';
-      if (geocode.length > 0) {
-        const { street, name, city, region } = geocode[0];
-        readableAddress = `${name || street}, ${city || region}`;
-      }
-  
-      setAddress(readableAddress);
-      setRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-        
-      });
-    } catch (error) {
-      console.error(error);
-      alert('Error getting location. Please try again.');
-    }
-  };
-  
 
   const handleNext = () => {
     router.push({

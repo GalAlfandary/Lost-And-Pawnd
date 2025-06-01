@@ -1,36 +1,107 @@
-// app/_layout.js
-import "react-native-gesture-handler";            // ➊ keep FIRST
+// app/_layout.jsx
+import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React, { useEffect } from "react";
-import { Stack } from "expo-router";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import { Stack, useRouter, usePathname } from "expo-router";
+import { AppState, Text, TextInput } from "react-native";
 import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import { Text, TextInput } from "react-native";
+import { supabase } from "../supabase";
+import {
+  saveLastRoute,
+  loadLastRoute,
+} from "../utils/sessionPersistor";
 
-// prevent the splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
+const TIMEOUT_MS = 5 * 60 * 1000; // 5 min
+
+/** 1️⃣  Make “/” the guaranteed home screen */
+export const unstable_settings = { initialRouteName: "index" };
 
 export default function RootLayout() {
+  /* ---- fonts ----------------------------------------------------------- */
   const [fontsLoaded] = useFonts({
     JaldiRegular: require("../assets/fonts/Jaldi-Regular.ttf"),
-    JaldiBold: require("../assets/fonts/Jaldi-Bold.ttf"),
+    JaldiBold:    require("../assets/fonts/Jaldi-Bold.ttf"),
   });
 
-  /* wait for fonts, then hide splash */
+  /* ---- routing --------------------------------------------------------- */
+  const pathname   = usePathname();           // clean URL, no group names
+  const router     = useRouter();
+  const pathRef    = useRef(pathname);        // latest path for listener
+
+  useEffect(() => { pathRef.current = pathname; }, [pathname]);
+
+  /* ---- Supabase session gate ------------------------------------------ */
+  const [sessionReady, setSessionReady] = useState(false);
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    // fires once automatically when the client has hydrated
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange(() => setSessionReady(true));
+    return () => subscription?.unsubscribe();
+  }, []);
 
-  if (!fontsLoaded) return null;
+  /* ---- background / foreground listener ------------------------------- */
+  useEffect(() => {
+    const appStateRef = { current: AppState.currentState };
 
-  /* apply default font globally */
-  Text.defaultProps = Text.defaultProps || {};
+    const sub = AppState.addEventListener("change", async (next) => {
+      const prev = appStateRef.current;
+      appStateRef.current = next;
+
+      /* leaving → save */
+      if (prev === "active" && /inactive|background/.test(next)) {
+        await saveLastRoute(pathRef.current);
+        return;
+      }
+
+      /* returning → hide splash (auto-hide already off) + restore */
+      if (/inactive|background/.test(prev) && next === "active") {
+        const { path, ts } = await loadLastRoute();
+        if (
+          path &&
+          path !== pathRef.current &&
+          ts &&
+          Date.now() - ts < TIMEOUT_MS
+        ) {
+          console.log("[restore] replacing →", path);
+          router.replace(path);
+        }
+      }
+    });
+
+    return () => sub.remove();
+  }, [router]);
+
+  /* ---- cold-start restore (runs once after auth ready) ----------------- */
+  useEffect(() => {
+    if (!sessionReady) return;
+    (async () => {
+      const { path, ts } = await loadLastRoute();
+      if (
+        path &&
+        ts &&
+        Date.now() - ts < TIMEOUT_MS &&
+        path !== pathRef.current
+      ) {
+        console.log("[cold-start] replacing →", path);
+        router.replace(path);
+      }
+    })();
+  }, [sessionReady, router]);
+
+  /* ---- block UI until all gates pass ---------------------------------- */
+  if (!fontsLoaded || !sessionReady) return null;
+
+  /* ---- optional global font defaults ---------------------------------- */
+  Text.defaultProps       = Text.defaultProps || {};
+  TextInput.defaultProps  = TextInput.defaultProps || {};
   Text.defaultProps.style = { fontFamily: "JaldiRegular" };
-
-  TextInput.defaultProps = TextInput.defaultProps || {};
   TextInput.defaultProps.style = { fontFamily: "JaldiRegular" };
 
-  /* ➋ wrap everything in GestureHandlerRootView */
+  /* ---- render ---------------------------------------------------------- */
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
